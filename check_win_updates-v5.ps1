@@ -186,7 +186,7 @@ if ($countCritical -gt 0 -Or $countOptional -gt 2) {
 				Add-Content $ReportFile "There are no applicable updates for this computer today.`r`n"
 				Add-Content $ReportFile "------------------------------------------------`r"
 			}
-			Elseif ($forzeInstall) {
+			Else {
 				Add-Content $ReportFile "==============================================================================`r`n"
 				Write-Host "`t Preparing List of Applicable Updates For This Computer ..." -ForeGroundColor "Yellow"
 				Add-Content $ReportFile "List of Applicable Updates For This Computer`r"
@@ -197,56 +197,57 @@ if ($countCritical -gt 0 -Or $countOptional -gt 2) {
 					$UpdateTitle = $Update.Title
 					Add-Content $ReportFile "`t $DisplayCount -- $UpdateTitle"
 				}
-				$Counter = 0
-				$DisplayCount = 0
-				Add-Content $ReportFile "`r`n"
-				Write-Host "`t Initialising Download of Applicable Updates ..." -ForegroundColor "Yellow"
-				Add-Content $ReportFile "Initialising Download of Applicable Updates"
-				Add-Content $ReportFile "------------------------------------------------`r"
-				$Downloader = $Session.CreateUpdateDownloader()
-				$UpdatesList = $Result.Updates
-				For ($Counter = 0; $Counter -LT $Result.Updates.Count; $Counter++) {
-					$UpdateCollection.Add($UpdatesList.Item($Counter)) | Out-Null
-					$ShowThis = $UpdatesList.Item($Counter).Title
-					$DisplayCount = $Counter + 1
-					Add-Content $ReportFile "`t $DisplayCount -- Downloading Update $ShowThis `r"
-					$Downloader.Updates = $UpdateCollection
-					$Track = $Downloader.Download()
-					If (($Track.HResult -EQ 0) -AND ($Track.ResultCode -EQ 2)) {
-						Add-Content $ReportFile "`t Download Status: SUCCESS"
+    				if ($forzeInstall) {
+					$Counter = 0
+					$DisplayCount = 0
+					Add-Content $ReportFile "`r`n"
+					Write-Host "`t Initialising Download of Applicable Updates ..." -ForegroundColor "Yellow"
+					Add-Content $ReportFile "Initialising Download of Applicable Updates"
+					Add-Content $ReportFile "------------------------------------------------`r"
+					$Downloader = $Session.CreateUpdateDownloader()
+					$UpdatesList = $Result.Updates
+					For ($Counter = 0; $Counter -LT $Result.Updates.Count; $Counter++) {
+						$UpdateCollection.Add($UpdatesList.Item($Counter)) | Out-Null
+						$ShowThis = $UpdatesList.Item($Counter).Title
+						$DisplayCount = $Counter + 1
+						Add-Content $ReportFile "`t $DisplayCount -- Downloading Update $ShowThis `r"
+						$Downloader.Updates = $UpdateCollection
+						$Track = $Downloader.Download()
+						If (($Track.HResult -EQ 0) -AND ($Track.ResultCode -EQ 2)) {
+							Add-Content $ReportFile "`t Download Status: SUCCESS"
+						}
+						Else {
+							Add-Content $ReportFile "`t Download Status: FAILED With Error -- $Error()"
+							$Error.Clear()
+							Add-content $ReportFile "`r"
+						}	
 					}
-					Else {
-						Add-Content $ReportFile "`t Download Status: FAILED With Error -- $Error()"
-						$Error.Clear()
-						Add-content $ReportFile "`r"
-					}	
-				}
-				$Counter = 0
-				$DisplayCount = 0
-			
-				Write-Host "`t Starting Installation of Downloaded Updates ..." -ForegroundColor "Yellow"
-				Add-Content $ReportFile "`r`n"
-				Add-Content $ReportFile "Installation of Downloaded Updates"
-				Add-Content $ReportFile "------------------------------------------------`r"
-				$Installer = New-Object -ComObject Microsoft.Update.Installer
-				For ($Counter = 0; $Counter -LT $UpdateCollection.Count; $Counter++) {
-					$Track = $Null
-					$DisplayCount = $Counter + 1
-					$WriteThis = $UpdateCollection.Item($Counter).Title
-					Add-Content $ReportFile "`t $DisplayCount -- Installing Update: $WriteThis"
-					$Installer.Updates = $UpdateCollection
-					Try {
-						$Track = $Installer.Install()
-						Add-Content $ReportFile "`t Update Installation Status: SUCCESS"
+					$Counter = 0
+					$DisplayCount = 0
+				
+					Write-Host "`t Starting Installation of Downloaded Updates ..." -ForegroundColor "Yellow"
+					Add-Content $ReportFile "`r`n"
+					Add-Content $ReportFile "Installation of Downloaded Updates"
+					Add-Content $ReportFile "------------------------------------------------`r"
+					$Installer = New-Object -ComObject Microsoft.Update.Installer
+					For ($Counter = 0; $Counter -LT $UpdateCollection.Count; $Counter++) {
+						$Track = $Null
+						$DisplayCount = $Counter + 1
+						$WriteThis = $UpdateCollection.Item($Counter).Title
+						Add-Content $ReportFile "`t $DisplayCount -- Installing Update: $WriteThis"
+						$Installer.Updates = $UpdateCollection
+						Try {
+							$Track = $Installer.Install()
+							Add-Content $ReportFile "`t Update Installation Status: SUCCESS"
+						}
+						Catch {
+							[System.Exception]
+							Add-Content $ReportFile "`t Update Installation Status: FAILED With Error -- $Error()"
+							$Error.Clear()
+							Add-content $ReportFile "`r"
+						}	
 					}
-					Catch {
-						[System.Exception]
-						Add-Content $ReportFile "`t Update Installation Status: FAILED With Error -- $Error()"
-						$Error.Clear()
-						Add-content $ReportFile "`r"
-					}	
-				}
-     				
+    				}
 			}
 
 
