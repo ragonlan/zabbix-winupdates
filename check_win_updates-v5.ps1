@@ -8,6 +8,10 @@
 
 #### Check https://github.com/SpookOz/zabbix-winupdates for the latest version of this script
 
+param(
+    [switch]$forzeInstall
+)
+
 # ------------------------------------------------------------------------- #
 # Variables
 # ------------------------------------------------------------------------- #
@@ -182,8 +186,7 @@ if ($countCritical -gt 0 -Or $countOptional -gt 2) {
 				Add-Content $ReportFile "There are no applicable updates for this computer today.`r`n"
 				Add-Content $ReportFile "------------------------------------------------`r"
 			}
-			Else {
-
+			Elseif ($forzeInstall) {
 				Add-Content $ReportFile "==============================================================================`r`n"
 				Write-Host "`t Preparing List of Applicable Updates For This Computer ..." -ForeGroundColor "Yellow"
 				Add-Content $ReportFile "List of Applicable Updates For This Computer`r"
@@ -220,6 +223,7 @@ if ($countCritical -gt 0 -Or $countOptional -gt 2) {
 				}
 				$Counter = 0
 				$DisplayCount = 0
+			
 				Write-Host "`t Starting Installation of Downloaded Updates ..." -ForegroundColor "Yellow"
 				Add-Content $ReportFile "`r`n"
 				Add-Content $ReportFile "Installation of Downloaded Updates"
@@ -242,6 +246,7 @@ if ($countCritical -gt 0 -Or $countOptional -gt 2) {
 						Add-content $ReportFile "`r"
 					}	
 				}
+     				
 			}
 
 
